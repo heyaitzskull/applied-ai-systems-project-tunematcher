@@ -14,6 +14,12 @@ This makes it easy because being able to just say what you're feeling is a much 
 
 ---
 
+## Demo
+
+Loom link: https://www.loom.com/share/c71698b933944d958fa4cbaa0fd7419d 
+
+---
+
 ## Architecture Overview
 
 The system runs in two AI steps with a retrieval layer in between:
