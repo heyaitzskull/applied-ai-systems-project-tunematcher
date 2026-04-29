@@ -3,6 +3,7 @@
 ## Original Project
 
 TuneMatcher 1.0 was a simple recommender that suggests songs that match what you like in music. It looks at your favorite genre, mood, and energy level to find good matches. The dataset has 30 songs. Each song has details like genre, mood, energy, tempo, and more. It covers pop, lofi, rock, and some others. But it might not have all music types out there.
+
 ---
 
 ## What This Version Does
@@ -46,9 +47,9 @@ pip install groq
 ```
 
 **4. Set your API key**
-in the .env file, add:
-    GROQ_API_KEY=your-key-here
-
+In the `.env` file, add:
+```
+GROQ_API_KEY=your-key-here
 ```
 
 **5. Run it**
