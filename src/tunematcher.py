@@ -100,10 +100,21 @@ def run_recommendation(client: Groq, songs: list[dict], user_input: str) -> str:
     logger.info(f"New request: {user_input!r}")
 
     prefs = parse_user_preferences(client, user_input)
+    print(
+        f"[Parser]    genre={prefs.get('genre')}, mood={prefs.get('mood')}, "
+        f"energy={prefs.get('energy')}, tempo={prefs.get('tempo')} BPM"
+    )
+
     candidates = retrieve_candidates(songs, prefs, top_k=15)
+    top_titles = ", ".join(c["title"] for c in candidates[:5])
+    print(f"[RAG]       Top candidates: {top_titles} ...")
+
     response_text, recommended_titles = get_ai_recommendations(client, user_input, prefs, candidates)
 
     valid = validate_recommendations(recommended_titles, candidates)
+    print(f"[Guardrail] {'PASS — all picks found in candidate pool' if valid else 'FAIL — possible hallucination detected'}")
+    print()
+
     if not valid:
         response_text += (
             "\n\nNote: Some recommendations may not have been found in the dataset. "
