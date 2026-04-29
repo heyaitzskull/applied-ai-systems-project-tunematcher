@@ -23,7 +23,7 @@ The system runs in two AI steps with a retrieval layer in between:
 4. **Guardrail**: checks that the AI only recommended real songs from the candidate list (catches hallucinations)
 5. **Logger**: every request and session is saved to the `logs/` folder
 
-For testing, 5 preset user personas run through the full pipeline and the results are checked against expected genre, mood, and energy ranges. See `diagram.md` for the full flow.
+For testing, 5 preset user personas run through the full pipeline and the results are checked against expected genre, mood, and energy ranges. See `diagrams/diagram.md` for the full flow.
 
 ---
 
@@ -46,12 +46,9 @@ pip install groq
 ```
 
 **4. Set your API key**
-```bash
-# Windows PowerShell
-$env:GROQ_API_KEY = "your-key-here"
+in the .env file, add:
+    GROQ_API_KEY=your-key-here
 
-# Mac/Linux
-export GROQ_API_KEY="your-key-here"
 ```
 
 **5. Run it**
