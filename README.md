@@ -17,11 +17,11 @@ This makes it easy because being able to just say what you're feeling is a much 
 
 The system runs in two AI steps with a retrieval layer in between:
 
-1. **Parser** — a Groq LLM call turns your plain text into structured preferences (genre, mood, tempo, energy, etc.)
-2. **RAG Retriever** — a scoring algorithm ranks every song in the dataset against those preferences and returns the top 15
-3. **Recommender** — a second LLM call looks at those 15 candidates and picks the best 3, with explanations
-4. **Guardrail** — checks that the AI only recommended real songs from the candidate list (catches hallucinations)
-5. **Logger** — every request and session is saved to the `logs/` folder
+1. **Parser**: a Groq LLM call turns your plain text into structured preferences (genre, mood, tempo, energy, etc.)
+2. **RAG Retriever**: a scoring algorithm ranks every song in the dataset against those preferences and returns the top 15
+3. **Recommender**: a second LLM call looks at those 15 candidates and picks the best 3, with explanations
+4. **Guardrail**: checks that the AI only recommended real songs from the candidate list (catches hallucinations)
+5. **Logger**: every request and session is saved to the `logs/` folder
 
 For testing, 5 preset user personas run through the full pipeline and the results are checked against expected genre, mood, and energy ranges. See `diagram.md` for the full flow.
 
@@ -67,7 +67,7 @@ python src/tunematcher.py --test
 
 ## Sample Interactions
 
-**Example 1 — Study music**
+**Example 1: Study music**
 ```
 What kind of music do you want? > something chill to study to, low energy
 
@@ -90,7 +90,7 @@ All three are lofi tracks with minimal intensity, picked specifically because th
 won't pull your attention away from what you're doing.
 ```
 
-**Example 2 — Workout music**
+**Example 2: Workout music**
 ```
 What kind of music do you want? > intense music for the gym, rock or hip-hop
 
@@ -113,7 +113,7 @@ These are all high-energy, high-intensity picks across rock and hip-hop, which
 is exactly what you asked for. They're loud and driving without being chaotic.
 ```
 
-**Example 3 — Late night mood**
+**Example 3: Late night mood**
 ```
 What kind of music do you want? > late night drive, moody and atmospheric
 
@@ -150,7 +150,7 @@ The dataset is small and the attributes (genre, mood, energy) are already struct
 It's free, fast, and `llama-3.3-70b-versatile` is capable enough for this task. The original version used Google Gemini but ran into quota limits on the free tier.
 
 **Trade-offs**
-- The scoring weights (genre 28%, mood 24%, etc.) were set manually. They work well but haven't been formally tuned — a different weighting might produce better results.
+- The scoring weights (genre 28%, mood 24%, etc.) were set manually. They work well but haven't been formally tuned, a different weighting might produce better results.
 - The guardrail catches hallucinations by title matching. If the LLM paraphrases a title slightly differently, it'll still flag it even if the intent was correct.
 
 ---
@@ -159,7 +159,7 @@ It's free, fast, and `llama-3.3-70b-versatile` is capable enough for this task. 
 
 There are two layers of testing: unit tests on the scoring functions and an end-to-end reliability suite using AI personas.
 
-**Scoring unit tests — 12/12 passed**
+**Scoring unit tests: 12/12 passed**
 
 The core scoring logic (genre matching, mood matching, distance scoring, retrieval) was tested with known inputs and expected outputs. All 12 checks passed. These tests don't need the API and can be run anytime.
 
@@ -171,11 +171,11 @@ Tested:
 - Full song score with perfect preferences → 1.0
 - Retrieval returns exactly 15 candidates, sorted highest to lowest
 
-**Reliability test suite — 5 personas, run with `--test` flag**
+**Reliability test suite: 5 personas, run with `--test` flag**
 
 Each persona (study, gym, heartbreak, party, late-night drive) runs the full pipeline and the 3 recommended songs are checked against expected genre family, mood family, energy range, and intensity range. Results are saved to `logs/test_results_<timestamp>.json`.
 
-The lofi/chill persona scored highest — the attributes for that genre are distinct enough that the scoring and the LLM agreed. The gym persona was the weakest — songs sometimes scored well numerically but didn't feel like obvious workout picks, because the weights don't fully capture raw aggression the way a person would.
+The lofi/chill persona scored highest where the attributes for that genre are distinct enough that the scoring and the LLM agreed. The gym persona was the weakest where songs sometimes scored well numerically but didn't feel like obvious workout picks, because the weights don't fully capture raw aggression the way a person would.
 
 **Guardrail**
 
@@ -184,31 +184,3 @@ Every response is validated to confirm the LLM only recommended songs from the 1
 **Logging**
 
 Every request is logged to `logs/sessions.jsonl` with the parsed preferences, top candidate titles, whether the guardrail passed, and response length. Errors are written to `logs/tunematcher.log` with timestamps. This makes it easy to go back and see exactly what the system did on any given request.
-
----
-
-## Responsible AI Reflection
-
-**Limitations and biases**
-
-The dataset only has 120 songs, so the system is pretty limited in range. If you ask for something niche — like Afrobeat fusion or 70s prog rock — there's a good chance nothing in the dataset fits well and the recommendations will feel off. The genre and mood families are also hand-coded, which means they reflect my own assumptions about what genres are "related." Someone else might draw those lines differently.
-
-The scoring weights (genre 28%, mood 24%, etc.) were also set by feel, not by any data-driven process. They work okay but there's no real reason genre should be worth exactly 28% — it just seemed right at the time.
-
-**Could it be misused?**
-
-Honestly, it's a music recommender, so the risk is pretty low compared to most AI systems. The main concern I can think of is API key exposure — if someone got hold of your Groq key they could rack up usage under your account. That's already handled by keeping the key in `.env` and out of version control. Beyond that, there's not much harmful you could do with a music recommender.
-
-**What surprised me during testing**
-
-I expected the guardrail to catch actual hallucinations — the LLM making up songs that don't exist. What I didn't expect was it triggering because the LLM was wrapping song titles in quotes (`"Tokyo Cafe"` instead of `Tokyo Cafe`). Technically correct output, but it broke the string matching completely. It was a good reminder that "the AI gave the right answer" and "the system handled the answer correctly" are two different problems.
-
-The other surprise was how inconsistent the output format was. The same prompt would sometimes use an em-dash (`—`) and sometimes a regular hyphen (`-`) to separate the song title from the artist. Small thing, but it kept breaking the parser until the prompt was made more explicit about it.
-
-**Collaboration with AI**
-
-I used Claude throughout this project — for writing code, debugging errors, and structuring the system.
-
-One genuinely helpful moment was when Gemini kept hitting quota limits and I wasn't sure whether it was the model, the key, or the account. Claude diagnosed that the `limit: 0` in the error meant the entire free tier quota was exhausted at the account level, not just one model — which meant switching models wouldn't help. That saved me from going in circles trying different Gemini models. It also suggested Groq as a free alternative, which ended up working perfectly.
-
-One moment where it went wrong: Claude wrote the initial title extraction logic to split on `—` (em-dash) as the separator between song title and artist. That worked in the first test but failed randomly after that because the LLM sometimes used a regular hyphen instead. Claude hadn't accounted for that inconsistency, and it took a few rounds of debugging to track it down and fix properly. It's the kind of thing that's easy to miss when you're generating code without running it.
