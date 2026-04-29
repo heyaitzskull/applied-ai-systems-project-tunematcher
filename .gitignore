@@ -1,0 +1,21 @@
+# Environment
+.env
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Logs
+logs/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Editor
+.vscode/
+.idea/
+*.swp
